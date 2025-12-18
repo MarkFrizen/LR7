@@ -59,38 +59,17 @@ def work_with_postgresql():
         return connection_result
     print(connection_result.get("message", "Подключено"))
     try:
-        # Создание таблицы employees
-        create_query = """
-            CREATE TABLE IF NOT EXISTS employees (
-                id SERIAL PRIMARY KEY,
-                first_name VARCHAR(50) NOT NULL,
-                last_name VARCHAR(50) NOT NULL,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                department VARCHAR(50),
-                salary DECIMAL(10, 2),
-                hire_date DATE DEFAULT CURRENT_DATE
-            )
+        # Создаем предварительную загрузку данных таблицы employees в кэш
+        query = """
+            -- Установка расширения предварительной загрузки, если не установлено
+            CREATE EXTENSION IF NOT EXISTS pg_prewarm;
+
+            -- Загрузка всей таблицы в кеш
+            SELECT pg_prewarm('employees');
         """
-        create_result = db.execute(create_query)
-
-        print(create_result)
-        # Добавление сотрудников
-        employees = [
-            ("Иван", "Иванов", "ivanov@company.com", "Разработка", 150000),
-            ("Мария", "Петрова", "petrova@company.com", "Дизайн", 120000),
-            ("Алексей", "Сидоров", "sidorov@company.com", "Разработка", 130000)
-        ]
-        rows_added = 0
-        for emp in employees:
-            result = db.execute(
-                "INSERT INTO employees (first_name, last_name, email, department, salary) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (email) DO NOTHING",
-                emp
-            )
-            if result["success"]:
-                rows_added += result.get("rows_affected", 0)
-
-        print(f"Добавлено сотрудников: {rows_added}")
-        # Сложный запрос
+        result = db.execute(query)
+        print(result)
+        # Запрос на выборку
         complex_query = """
             SELECT 
                 e.first_name || ' ' || e.last_name AS full_name,
