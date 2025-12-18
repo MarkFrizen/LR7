@@ -20,10 +20,10 @@ class PostgreSQLManager:
             self.cursor.execute("SELECT version()")
             version_info = self.cursor.fetchone()
             return {
-                    "success": True,
-                    "message": f"Подключено к PostgreSQL {version_info['version']}",
-                    "database": self.config["dbname"]
-                }
+                "success": True,
+                "message": f"Подключено к PostgreSQL {version_info['version']}",
+                "database": self.config["dbname"]
+            }
         except Exception as e:
             return {"success": False, "error": str(e)}
     def execute(self, query: str, params: Tuple = ()) -> Dict[str, Any]:
@@ -72,9 +72,8 @@ def work_with_postgresql():
             )
         """
         create_result = db.execute(create_query)
-        if not create_result["success"]:
-            return create_result
-        print("Таблица employees создана или уже существует")
+
+        print(create_result)
         # Добавление сотрудников
         employees = [
             ("Иван", "Иванов", "ivanov@company.com", "Разработка", 150000),
@@ -89,6 +88,7 @@ def work_with_postgresql():
             )
             if result["success"]:
                 rows_added += result.get("rows_affected", 0)
+
         print(f"Добавлено сотрудников: {rows_added}")
         # Сложный запрос
         complex_query = """
@@ -102,11 +102,14 @@ def work_with_postgresql():
             ORDER BY e.salary DESC
         """
         complex_result = db.execute(complex_query)
+
         if complex_result["success"]:
             sample_data = complex_result.get("data", [])[:3]
             print("Пример данных из таблицы employees:")
             for row in sample_data:
                 print(f"  {row['full_name']}: {row['department']}, {row['salary']}")
+        print(create_result)
+
     finally:
         db.close()
 
