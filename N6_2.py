@@ -12,7 +12,6 @@ class PostgreSQLManager:
         self.conn = None
         self.cursor = None
     def connect(self) -> Dict[str, Any]:
-        """Подключение к PostgreSQL с подробными ошибками"""
         try:
             self.conn = psycopg2.connect(**self.config)
             self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
@@ -32,6 +31,7 @@ class PostgreSQLManager:
             if not self.cursor:
                 return {"success": False, "error": "Нет активного подключения"}
             start_time = time.time()
+            # Выполнение запроса
             self.cursor.execute(query, params)
             result = {"success": True}
             if query.strip().upper().startswith("SELECT"):
@@ -49,14 +49,10 @@ class PostgreSQLManager:
             self.cursor.close()
         if self.conn:
             self.conn.close()
-
-def work_with_postgresql():
+def run():
     """Работа с PostgreSQL через psycopg2"""
-    print("Проверка подключения к PostgreSQL...")
     db = PostgreSQLManager()
     connection_result = db.connect()
-    if not connection_result.get("success"):
-        return connection_result
     print(connection_result.get("message", "Подключено"))
     try:
         # Создание таблицы employees
@@ -72,7 +68,6 @@ def work_with_postgresql():
             )
         """
         create_result = db.execute(create_query)
-
         print(create_result)
         # Добавление сотрудников
         employees = [
@@ -88,31 +83,24 @@ def work_with_postgresql():
             )
             if result["success"]:
                 rows_added += result.get("rows_affected", 0)
-
         print(f"Добавлено сотрудников: {rows_added}")
         # Сложный запрос
         complex_query = """
             SELECT 
-                e.first_name || ' ' || e.last_name AS full_name,
+                e.first_name, e.last_name AS full_name,
                 e.department,
-                e.salary,
-                COUNT(*) OVER (PARTITION BY e.department) as dept_count,
-                AVG(e.salary) OVER (PARTITION BY e.department) as avg_dept_salary
+                e.salary
             FROM employees e
             ORDER BY e.salary DESC
         """
         complex_result = db.execute(complex_query)
-
         if complex_result["success"]:
             sample_data = complex_result.get("data", [])[:3]
             print("Пример данных из таблицы employees:")
             for row in sample_data:
                 print(f"  {row['full_name']}: {row['department']}, {row['salary']}")
         print(complex_result["execution_time"])
-
     finally:
         db.close()
-
-
 if __name__ == "__main__":
-    result = work_with_postgresql()
+    run()
