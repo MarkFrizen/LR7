@@ -65,7 +65,8 @@ def create_sqlite_db() -> Dict[str, Any]:
         users = [
             (1, "Иван Иванов", "ivan@example.com"),
             (2, "Мария Петрова", "maria@example.com"),
-            (3, "Алексей Сидоров", "alex@example.com")
+            (3, "Алексей Сидоров", "alex@example.com"),
+            (4, "Фризен Марк", "frizenmarkv@example.com")
         ]
         inserted = 0
         for user in users:
@@ -90,21 +91,3 @@ if __name__ == "__main__":
     result = create_sqlite_db()
     print("Результат выполнения:")
     print(result)
-    # Проверяем, что файл БД создался
-    import os
-    if os.path.exists("lab7.db"):
-        print(f"\nФайл БД создан: {os.path.getsize('lab7.db')} байт")
-        # Проверяем содержимое
-        conn = sqlite3.connect("lab7.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = cursor.fetchall()
-        print(f"Таблицы в БД: {[t[0] for t in tables]}")
-        cursor.execute("SELECT * FROM users")
-        users = cursor.fetchall()
-        print(f"Записей в таблице users: {len(users)}")
-        for user in users:
-            print(f"  ID: {user[0]}, Имя: {user[1]}, Email: {user[2]}")
-        conn.close()
-    else:
-        print("Файл БД не создан")
