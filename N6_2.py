@@ -57,7 +57,7 @@ def run():
     try:
         # Создание таблицы employees
         create_query = """
-            CREATE TABLE IF NOT EXISTS employees (
+            CREATE TABLE IF NOT EXISTS employees3 (
                 id SERIAL PRIMARY KEY,
                 first_name VARCHAR(50) NOT NULL,
                 last_name VARCHAR(50) NOT NULL,
@@ -67,18 +67,24 @@ def run():
                 hire_date DATE DEFAULT CURRENT_DATE
             )
         """
-        create_result = db.execute(create_query)
-        print(create_result)
+        db.execute(create_query)
         # Добавление сотрудников
         employees = [
             ("Иван", "Иванов", "ivanov@company.com", "Разработка", 150000),
             ("Мария", "Петрова", "petrova@company.com", "Дизайн", 120000),
-            ("Алексей", "Сидоров", "sidorov@company.com", "Разработка", 130000)
+            ("Алексей", "Сидоров", "sidorov@company.com", "Разработка", 130000),
+            ("Елена", "Кузнецова", "kuznetsova@company.com", "Маркетинг", 110000),
+            ("Дмитрий", "Смирнов", "smirnov@company.com", "Разработка", 145000),
+            ("Ольга", "Попова", "popova@company.com", "HR", 95000),
+            ("Сергей", "Васильев", "vasilyev@company.com", "Дизайн", 115000),
+            ("Наталья", "Морозова", "morozova@company.com", "Маркетинг", 105000),
+            ("Андрей", "Федоров", "fedorov@company.com", "Разработка", 138000),
+            ("Татьяна", "Зайцева", "zaitseva@company.com", "HR", 98000)
         ]
         rows_added = 0
         for emp in employees:
             result = db.execute(
-                "INSERT INTO employees (first_name, last_name, email, department, salary) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (email) DO NOTHING",
+                "INSERT INTO employees3 (first_name, last_name, email, department, salary) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (email) DO NOTHING",
                 emp
             )
             if result["success"]:
@@ -87,16 +93,17 @@ def run():
         # Сложный запрос
         complex_query = """
             SELECT 
-                e.first_name, e.last_name AS full_name,
+                e.first_name, 
+                e.last_name AS full_name,
                 e.department,
                 e.salary
-            FROM employees e
+            FROM employees3 e
             ORDER BY e.salary DESC
         """
         complex_result = db.execute(complex_query)
         if complex_result["success"]:
-            sample_data = complex_result.get("data", [])[:3]
-            print("Пример данных из таблицы employees:")
+            sample_data = complex_result.get("data", [])
+            print("Пример данных из таблицы employees3:")
             for row in sample_data:
                 print(f"  {row['full_name']}: {row['department']}, {row['salary']}")
         print(complex_result["execution_time"])
