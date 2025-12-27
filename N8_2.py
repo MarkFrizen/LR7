@@ -12,7 +12,6 @@ class PostgreSQLManager:
         self.conn = None
         self.cursor = None
     def connect(self) -> Dict[str, Any]:
-        """Подключение к PostgreSQL с подробными ошибками"""
         try:
             self.conn = psycopg2.connect(**self.config)
             self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
@@ -49,49 +48,38 @@ class PostgreSQLManager:
             self.cursor.close()
         if self.conn:
             self.conn.close()
-
-def work_with_postgresql():
+def run_with_cashe():
     """Работа с PostgreSQL через psycopg2"""
-    print("Проверка подключения к PostgreSQL...")
     db = PostgreSQLManager()
     connection_result = db.connect()
-    if not connection_result.get("success"):
-        return connection_result
     print(connection_result.get("message", "Подключено"))
     try:
-        # Создаем предварительную загрузку данных таблицы employees в кэш
+        # Создаем предварительную загрузку данных таблицы employees2 в кэш
         query = """
             -- Установка расширения предварительной загрузки, если не установлено
             CREATE EXTENSION IF NOT EXISTS pg_prewarm;
-
             -- Загрузка всей таблицы в кеш
-            SELECT pg_prewarm('employees');
+            SELECT pg_prewarm('employees2');
         """
-        result = db.execute(query)
-        print(result)
+        db.execute(query)
         # Запрос на выборку
         complex_query = """
             SELECT 
-                e.first_name || ' ' || e.last_name AS full_name,
+                e.first_name,
+                e.last_name AS full_name,
                 e.department,
-                e.salary,
-                COUNT(*) OVER (PARTITION BY e.department) as dept_count,
-                AVG(e.salary) OVER (PARTITION BY e.department) as avg_dept_salary
-            FROM employees e
+                e.salary
+            FROM employees2 e
             ORDER BY e.salary DESC
         """
         complex_result = db.execute(complex_query)
-
         if complex_result["success"]:
-            sample_data = complex_result.get("data", [])[:3]
-            print("Пример данных из таблицы employees:")
+            sample_data = complex_result.get("data", [])
+            print("Пример данных из таблицы employees2:")
             for row in sample_data:
                 print(f"  {row['full_name']}: {row['department']}, {row['salary']}")
         print(complex_result["execution_time"])
-
     finally:
         db.close()
-
-
 if __name__ == "__main__":
-    result = work_with_postgresql()
+    result = run_with_cashe()
