@@ -54,7 +54,7 @@ def run_with_cashe():
     connection_result = db.connect()
     print(connection_result.get("message", "Подключено"))
     try:
-        # Создаем предварительную загрузку данных таблицы employees2 в кэш
+        # Предварительную загружаем данные таблицы employees2 в кэш
         query = """
             -- Установка расширения предварительной загрузки, если не установлено
             CREATE EXTENSION IF NOT EXISTS pg_prewarm;
