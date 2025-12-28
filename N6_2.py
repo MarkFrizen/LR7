@@ -51,8 +51,8 @@ class PostgreSQLManager:
             self.conn.close()
 def run():
     """Работа с PostgreSQL через psycopg2"""
-    db = PostgreSQLManager()
-    connection_result = db.connect()
+    pg_manager = PostgreSQLManager()
+    connection_result = pg_manager.connect()
     print(connection_result.get("message", "Подключено"))
     try:
         # Создание таблицы employees
@@ -67,7 +67,7 @@ def run():
                 hire_date DATE DEFAULT CURRENT_DATE
             )
         """
-        db.execute(create_query)
+        pg_manager.execute(create_query)
         # Добавление сотрудников
         employees = [
             ("Иван", "Иванов", "ivanov@company.com", "Разработка", 150000),
@@ -83,14 +83,14 @@ def run():
         ]
         rows_added = 0
         for emp in employees:
-            result = db.execute(
+            result = pg_manager.execute(
                 "INSERT INTO employees3 (first_name, last_name, email, department, salary) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (email) DO NOTHING",
                 emp
             )
             if result["success"]:
-                rows_added += result.get("rows_affected", 0)
+                rows_added += 1
         print(f"Добавлено сотрудников: {rows_added}")
-        # Сложный запрос
+        # Проверка введённых данных
         complex_query = """
             SELECT 
                 e.first_name, 
@@ -100,7 +100,7 @@ def run():
             FROM employees3 e
             ORDER BY e.salary DESC
         """
-        complex_result = db.execute(complex_query)
+        complex_result = pg_manager.execute(complex_query)
         if complex_result["success"]:
             sample_data = complex_result.get("data", [])
             print("Пример данных из таблицы employees3:")
@@ -108,6 +108,6 @@ def run():
                 print(f"  {row['full_name']}: {row['department']}, {row['salary']}")
         print(complex_result["execution_time"])
     finally:
-        db.close()
+        pg_manager.close()
 if __name__ == "__main__":
     run()
